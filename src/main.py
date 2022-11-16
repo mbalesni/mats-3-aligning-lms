@@ -37,17 +37,19 @@ def main():
     # put a copy of the data in the experiment dir for reference
 
     # device = "cuda:0" if args.use_gpu and torch.cuda.is_available() else "cpu"
+    shots_list=[0,1,2,3]
     model_names = args.models
-    task = get_task(args.dataset_name)
+    task = get_task(args.dataset_name, shots_list)
     all_results = []
     for model_name in tqdm(model_names):
-        all_results.append(evaluate_on_task(task, model_name))
+        all_results.append(evaluate_on_task(task, args.dataset_name, model_name))
 
     # final step to add all results to a jsonl
     for results, model_name in zip(all_results, model_names):
-        results_path = Path(write_dir, model_name + ".json")
-        with results_path.open("w") as f:
-            json.dump(results, f)
+        for shot, result in zip(shots_list, results):
+            results_path = Path(write_dir, model_name + f"_{shot}_shot.json")
+            with results_path.open("w") as f:
+                json.dump(result.score_dict, f)
 
 
 def set_up_logging(log_path: Path, logging_level: str):

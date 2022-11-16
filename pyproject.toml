@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "aligning_lms"
+name = "src"
 version = "0.1.0"
 description = ""
 authors = ["Mykyta Baliesnyi"]
