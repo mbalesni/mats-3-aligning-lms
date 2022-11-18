@@ -15,7 +15,7 @@ pip install -e .
 2. Create an `.env` file with your OpenAI API key to use it in scripts (see `.env.example` for inspiration).
 
 ## Example Usage
-Below is an example of running three gpt3 models on the `emoji-movie` dataset, storing the results in JSON files in `results/emoji_movie`.
+Below is an example of running three gpt3 models on the `emoji-movie` and `temporal-sequences` tasks, storing the results in JSON files in `results/test_run/emoji_movie` etc.
 ```
-python src/main.py --exp-dir emoji_movie  --dataset-name  emoji_movie --models ada babbage curie
+python src/main.py --exp-dir test_run --task-names temporal_sequences emoji_movie --models ada babbage curie
 ```

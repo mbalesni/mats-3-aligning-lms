@@ -221,5 +221,4 @@ def evaluate_on_task(task, task_name, model_name, huggface=False, max_examples=N
     for r in results_list:
         print(f"{pp.pformat(r.score_dict)}")
 
-
     return results_list
