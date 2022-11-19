@@ -3,7 +3,6 @@ import json
 import argparse
 import sys
 from typing import Union, cast
-import logging
 import pandas as pd
 from pathlib import Path
 from tqdm.autonotebook import tqdm
@@ -24,6 +23,8 @@ def main():
         base_write_dir = Path(".")
     base_write_dir.mkdir(parents=True, exist_ok=True)
     shots_list=[0,1,2,3]
+    openai_models = ["ada", "babbage", "curie", "davinci", "text-ada-001", "text-babbage-001",
+                     "text-curie-001", "text-davinci-001", "text-davinci-002"]
     task_names = args.task_names
 
     for task_name in task_names:
@@ -31,20 +32,21 @@ def main():
         write_dir = base_write_dir / task_name
         write_dir.mkdir(parents=True, exist_ok=True)
         # we have to set up the logging AFTER deciding on a dir to write to
-        log_path = Path(write_dir, "log.log")
         arg_log_path = Path(write_dir, "args.log")
         with arg_log_path.open("w") as f:
             json.dump(args.__dict__, f, indent=2)
-    
-        logging.info(f"Logging set up with args\n{args}")
-        logging.info(f"Saving to results to {write_dir}")
+        print(f"Saving results to {write_dir}")
     
         # device = "cuda:0" if args.use_gpu and torch.cuda.is_available() else "cpu"
         model_names = args.models
         task = get_task(task_name, shots_list)
         all_results = []
         for model_name in tqdm(model_names):
-            all_results.append(evaluate_on_task(task, task_name, model_name))
+            if model_name in openai_models:
+                all_results.append(evaluate_on_task(task, task_name, model_name))
+            else:
+                all_results.append(evaluate_on_task(task, task_name,  
+                                                    model_name, huggface=True))
     
         # final step to add all results to a jsonl
         for results, model_name in zip(all_results, model_names):
@@ -52,23 +54,6 @@ def main():
                 results_path = Path(write_dir, model_name + f"_{shot}_shot.json")
                 with results_path.open("w") as f:
                     json.dump(result.score_dict, f)
-
-
-def set_up_logging(log_path: Path, logging_level: str):
-    logging_levels = {
-        "debug": logging.DEBUG,
-        "info": logging.INFO,
-        "warn": logging.WARN,
-        "error": logging.ERROR,
-    }
-    
-    logging.basicConfig(
-        level=logging_levels[logging_level],
-        format="%(asctime)s [%(levelname)s] %(message)s",
-        handlers=[logging.FileHandler(log_path), logging.StreamHandler()],
-    )
-    # suppress debug warnings from the Requests library
-    logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 
 def parse_args(args):
@@ -120,18 +105,6 @@ def parse_args(args):
             "opt-13b",
         ],
         required=True,
-    )
-    parser.add_argument(
-        "--logging-level",
-        type=str,
-        help="The level of logging to print",
-        default="info",
-        choices=[
-            "debug",
-            "info",
-            "warn",
-            "error",
-        ],
     )
     args = parser.parse_args(args)
     return args
