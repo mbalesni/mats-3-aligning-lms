@@ -170,7 +170,7 @@ class OpenAIGPT3(Model):
         )
 
 
-def evaluate_on_task(task_name, model_name, huggface=False, max_examples=None, shots_list=[0,1,2,3]):
+def get_task(task_name, shots_list, max_examples=None):
     '''Also supports gpt2 models from huggingface.'''
 
     task_module_name = f"bigbench.benchmark_tasks.{task_name}"
@@ -188,7 +188,10 @@ def evaluate_on_task(task_name, model_name, huggface=False, max_examples=None, s
         )
     else:
         task = util.load_programmatic_task(task_submodule_name)
+    
+    return task
 
+def evaluate_on_task(task, task_name, model_name, huggface=False, max_examples=None):
     model = None
     if huggface:
         model = hf_models.BIGBenchHFModel(
@@ -217,6 +220,5 @@ def evaluate_on_task(task_name, model_name, huggface=False, max_examples=None, s
     print(f"results:")
     for r in results_list:
         print(f"{pp.pformat(r.score_dict)}")
-
 
     return results_list
