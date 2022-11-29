@@ -39,7 +39,7 @@ class OpenAIGPT3(Model):
         self.max_parallel = max_parallel
 
     def generate_text(
-        self, inputs, max_length=500, stop_string=None, output_regex=None,
+        self, inputs, max_length=500, stop_string=None, output_regex=None, temperature=0, **kwargs,
     ):
         if isinstance(inputs, str):
             inputs = [inputs]
@@ -55,7 +55,8 @@ class OpenAIGPT3(Model):
                 prompt=batch_inputs,
                 max_tokens=max_length,
                 stop=stop_string,
-                temperature=0,
+                temperature=temperature,
+                **kwargs,
             )
             for completion in batch_outputs.choices:
                 outputs.append(completion.text)
